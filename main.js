@@ -1,6 +1,8 @@
 /**
  * @TODO get a reference to the Firebase Database object
  */
+// gets a variable we can use to make changes to our database
+const database = firebase.database().ref();
 
 /**
  * @TODO get const references to the following elements:
@@ -10,6 +12,12 @@
  *      - button with id #send-btn and the updateDB
  *        function as an onclick event handler
  */
+const chatDiv = document.getElementById('all-messages');
+const usernameInput = document.getElementById('username');
+const messageInput = document.getElementById('message');
+const sendButton = document.getElementById('send-btn');
+// whenever someone clicks the send button, update the database
+sendButton.onclick = updateDB;
 
 /**
  * @TODO create a function called updateDB which takes
@@ -21,13 +29,29 @@
  *      - writes this object to the database
  *      - resets the value of #message input element
  */
+function updateDB(event) {
+    event.preventDefault();
+
+    const entry = {
+        username: usernameInput.value,
+        message: messageInput.value
+    };
+
+    // adds the message to our databse
+    database.push(entry);
+
+    // CLEARS CHATBOX AFTER SENDING A MESSAGE
+    messageInput.value = '';
+}
 
 /**
  * @TODO add the addMessageToBoard function as an event
  * handler for the "child_added" event on the database
  * object
  */
-
+//call addmessagetoBoard() when a new row is added to our database
+// will also call for each existing row when we load the page
+database.on('child_added', addMessageToBoard);
 /**
  * @TODO create a function called addMessageToBoard that
  * takes one parameter rowData which:
@@ -38,6 +62,15 @@
  *        #all-messages (we should have a reference already!)
  * 
  */
+function addMessageToBoard(rowData) {
+    const messageObject = rowData.val();
+    console.log(messageObject);
+
+    let messageDiv = makeSingleMessageHTML(messageObject.username, messageObject.message);
+
+
+    chatDiv.appendChild(messageDiv);
+}
 
 /** 
  * @TODO create a function called makeSingleMessageHTML which takes
@@ -56,6 +89,31 @@
  * 
  *      - returns the parent div
  */
+ function makeSingleMessageHTML(usernameTxt, messageTxt) {
+    // create a parent div
+    let parentDiv = document.createElement("div");
+    // add .message class
+    parentDiv.classList.add("single-message");
+
+    // create the first p tag for username
+    let usernameP = document.createElement("p");
+    // add .message-username class
+    usernameP.classList.add("single-message-username");
+    // update the innerHTML to the appropriate data
+    usernameP.innerHTML = usernameTxt + ":";
+    // append to parentDiv
+    parentDiv.appendChild(usernameP);
+
+    // create the second p tag for message
+    let messageP = document.createElement("p");
+    // update the innerHTML to the appropriate data
+    messageP.innerHTML = messageTxt;
+    // append to parent Div
+    parentDiv.appendChild(messageP);
+
+    // return the parent div
+    return parentDiv;
+}
 
 /**
  * @BONUS add an onkeyup event handler to the form HTML
